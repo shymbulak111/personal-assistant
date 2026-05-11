@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Персональный Ассистент</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:'DM Sans',sans-serif;background:var(--bg0);color:var(--t1);min-height:100vh;overflow-x:hidden;transition:background .25s,color .25s}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input,textarea,select{font-family:inherit;outline:none}
+:root{
+  --bg0:#08080e;--bg1:#0d0d16;--bg2:#13131e;--bg3:#1a1a28;
+  --s0:#08080e;--s1:#0d0d16;--s2:#13131e;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.11);--br:rgba(255,255,255,.06);
+  --t1:#f0eeff;--t2:#9b96c8;--t3:#4a476a;
+  --v:#8b5cf6;--ac:#8b5cf6;--vd:rgba(139,92,246,.18);--vg:rgba(139,92,246,.35);
+  --green:#4ade80;--amber:#fbbf24;--red:#f87171;--blue:#60a5fa;
+  --sw:230px;--r:12px;--rs:8px
+}
+body.light{
+  --bg0:#f4f4fb;--bg1:#ffffff;--bg2:#ededf7;--bg3:#e4e4f2;
+  --s0:#f4f4fb;--s1:#ffffff;--s2:#ededf7;
+  --border:rgba(0,0,0,.07);--border2:rgba(0,0,0,.13);--br:rgba(0,0,0,.07);
+  --t1:#0c0c1a;--t2:#565380;--t3:#a09cbe;
+  --v:#6d28d9;--ac:#6d28d9;--vd:rgba(109,40,217,.1);--vg:rgba(109,40,217,.18);
+  --green:#16a34a;--amber:#d97706;--red:#dc2626;--blue:#2563eb;
+}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px}
+
+/* ── AUTH ── */
+#auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(139,92,246,.13) 0%,transparent 70%)}
+.auth-card{background:var(--bg1);border:1px solid var(--border2);border-radius:20px;padding:40px;
+  width:100%;max-width:420px;box-shadow:0 0 80px rgba(139,92,246,.08)}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;letter-spacing:-1px;text-align:center;margin-bottom:6px}
+.logo span{color:var(--v)}
+.tagline{text-align:center;font-size:13px;color:var(--t2);margin-bottom:28px}
+.tabs{display:flex;background:var(--bg2);border-radius:var(--rs);padding:4px;margin-bottom:24px;gap:4px}
+.tab{flex:1;padding:8px;border-radius:6px;font-size:13px;font-weight:500;background:transparent;color:var(--t2);transition:.15s}
+.tab.on{background:var(--bg3);color:var(--t1)}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;font-weight:600;color:var(--t3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.fi{width:100%;padding:10px 13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--t1);font-size:14px;transition:.15s}
+.fi:focus{border-color:var(--v)}
+.fi::placeholder{color:var(--t3)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+textarea.fi{resize:vertical;min-height:80px}
+.btn-p{width:100%;padding:12px;background:var(--v);border-radius:var(--rs);color:#fff;font-size:14px;font-weight:600;
+  margin-top:8px;transition:.15s}
+.btn-p:hover{opacity:.88}
+.btn-p:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── APP SHELL ── */
+#app{display:none;min-height:100vh}
+.sb{width:var(--sw);min-height:100vh;background:var(--bg1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;padding:18px 10px}
+.sb-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.5px;
+  padding:6px 10px 18px;color:var(--t1)}
+.sb-logo span{color:var(--v)}
+.sb-nav{flex:1;display:flex;flex-direction:column;gap:2px}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--rs);
+  color:var(--t2);font-size:13.5px;font-weight:500;cursor:pointer;transition:.13s;user-select:none}
+.ni:hover{background:var(--bg2);color:var(--t1)}
+.ni.on{background:var(--vd);color:var(--v)}
+.ni svg{width:17px;height:17px;flex-shrink:0}
+.sb-foot{border-top:1px solid var(--border);padding-top:10px;margin-top:4px}
+.uinfo{padding:8px 10px;display:flex;align-items:center;gap:9px;margin-bottom:4px}
+.uav{width:30px;height:30px;background:var(--vd);border:1px solid var(--v);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--v);flex-shrink:0}
+.uname{font-size:12px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uemail{font-size:10.5px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn-out{width:100%;padding:8px 10px;border-radius:var(--rs);background:transparent;color:var(--red);
+  font-size:13px;font-weight:500;display:flex;align-items:center;gap:7px;opacity:.65;transition:.15s}
+.btn-out:hover{opacity:1;background:rgba(248,113,113,.09)}
+
+/* ── MAIN ── */
+.mn{margin-left:var(--sw);flex:1;padding:30px 34px;min-height:100vh}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px}
+.pt{font-family:'Syne',sans-serif;font-size:23px;font-weight:700;letter-spacing:-.4px;color:var(--t1)}
+.ps{font-size:13px;color:var(--t2);margin-top:3px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:var(--rs);
+  font-size:13px;font-weight:500;cursor:pointer;transition:.13s}
+.btn-v{background:var(--v);color:#fff;border:none}
+.btn-v:hover{opacity:.87}
+.btn-g{background:transparent;color:var(--t2);border:1px solid var(--border2)}
+.btn-g:hover{background:var(--bg3);color:var(--t1)}
+.btn-d{background:transparent;color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.btn-d:hover{background:rgba(248,113,113,.09)}
+.bic{padding:5px;background:transparent;color:var(--t3);border:none;border-radius:6px;transition:.13s;line-height:0}
+.bic:hover{color:var(--t1);background:var(--bg3)}
+.bsm{padding:4px 10px;font-size:12px;border-radius:6px}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;transition:.15s}
+.card:hover{border-color:var(--border2)}
+
+/* ── STATS ── */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sc.cv::before{background:var(--v)}
+.sc.cg::before{background:var(--green)}
+.sc.ca::before{background:var(--amber)}
+.sc.cb::before{background:var(--blue)}
+.sc.cr::before{background:var(--red)}
+.sl{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px}
+.sv{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;color:var(--t1);line-height:1;margin-bottom:5px}
+.ss{font-size:12px;color:var(--t2)}
+.sico{position:absolute;right:16px;top:14px;font-size:28px;opacity:.1}
+
+/* ── FILTER BAR ── */
+.fb{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.fbt{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:500;background:var(--bg2);
+  border:1px solid var(--border);color:var(--t2);cursor:pointer;transition:.13s}
+.fbt:hover{border-color:var(--border2);color:var(--t1)}
+.fbt.on{background:var(--vd);border-color:var(--v);color:var(--v)}
+.sep{width:1px;height:20px;background:var(--border);margin:0 2px}
+
+/* ── TASKS ── */
+.tl{display:flex;flex-direction:column;gap:7px}
+.ti{background:var(--bg2);border:1px solid var(--border);border-left:3px solid transparent;
+  border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:11px;transition:.13s}
+.ti:hover{border-color:var(--border2)}
+.ti.pl{border-left-color:#64748b}
+.ti.pm{border-left-color:var(--blue)}
+.ti.ph2{border-left-color:var(--amber)}
+.ti.pc{border-left-color:var(--red)}
+.ti.sd{opacity:.55}
+.chk{width:17px;height:17px;border:1.5px solid var(--border2);border-radius:50%;flex-shrink:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.13s}
+.chk:hover{border-color:var(--v);background:var(--vd)}
+.chk.ck{background:var(--green);border-color:var(--green)}
+.chk svg{width:9px;height:9px;stroke:#fff;display:none}
+.chk.ck svg{display:block}
+.tb{flex:1;min-width:0}
+.tt{font-size:13.5px;font-weight:500;color:var(--t1);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti.sd .tt{text-decoration:line-through;color:var(--t3)}
+.tm{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.tac{display:flex;gap:3px;opacity:0;transition:.13s}
+.ti:hover .tac{opacity:1}
+.tdue{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t3)}
+
+/* ── BADGES ── */
+.bdg{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;
+  font-size:10.5px;font-weight:600;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.2px}
+.bdg-todo{background:rgba(74,71,106,.25);color:#9896c8}
+.bdg-in_progress{background:rgba(96,165,250,.13);color:var(--blue)}
+.bdg-done{background:rgba(74,222,128,.13);color:var(--green)}
+.bdg-cancelled{background:rgba(74,71,106,.15);color:var(--t3)}
+.bdg-low{background:rgba(100,116,139,.18);color:#94a3b8}
+.bdg-medium{background:rgba(96,165,250,.13);color:var(--blue)}
+.bdg-high{background:rgba(251,191,36,.13);color:var(--amber)}
+.bdg-critical{background:rgba(248,113,113,.13);color:var(--red)}
+.bdg-pending{background:rgba(251,191,36,.13);color:var(--amber)}
+.bdg-sent{background:rgba(74,222,128,.13);color:var(--green)}
+
+/* ── NOTES ── */
+.ng{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.nc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;
+  position:relative;transition:.15s;cursor:default}
+.nc:hover{border-color:var(--border2);transform:translateY(-1px)}
+.nc.pn{border-color:rgba(139,92,246,.28)}
+.npin{position:absolute;top:13px;right:13px;opacity:.3;font-size:14px}
+.nc.pn .npin{opacity:1}
+.ntit{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:6px;padding-right:20px}
+.ncnt{font-size:12.5px;color:var(--t2);line-height:1.6;display:-webkit-box;
+  -webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.nft{display:flex;align-items:center;justify-content:space-between;margin-top:12px;
+  padding-top:10px;border-top:1px solid var(--border)}
+.ndt{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--t3)}
+.nac{display:flex;gap:2px}
+
+/* ── REMINDERS ── */
+.rl{display:flex;flex-direction:column;gap:9px}
+.ri{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;
+  display:flex;align-items:center;gap:13px;transition:.13s}
+.ri:hover{border-color:var(--border2)}
+.rdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.rdot.pending{background:var(--amber);box-shadow:0 0 7px rgba(251,191,36,.5)}
+.rdot.sent{background:var(--green)}
+.rdot.cancelled{background:var(--t3)}
+.rb{flex:1;min-width:0}
+.rtit{font-size:13.5px;font-weight:500;color:var(--t1)}
+.rtm{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--t2);margin-top:2px}
+.rmsg{font-size:12px;color:var(--t3);margin-top:2px}
+
+/* ── CHAT ── */
+.cl{display:grid;grid-template-columns:220px 1fr;gap:14px;height:calc(100vh - 130px)}
+.cs{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  overflow:hidden;display:flex;flex-direction:column}
+.csh{padding:12px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;
+  color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:space-between}
+.csl{flex:1;overflow-y:auto;padding:6px}
+.si{padding:9px 11px;border-radius:7px;cursor:pointer;transition:.13s;margin-bottom:1px}
+.si:hover{background:var(--bg3)}
+.si.on{background:var(--vd)}
+.sti{font-size:12.5px;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sdt{font-size:10.5px;color:var(--t3);margin-top:1px;font-family:'JetBrains Mono',monospace}
+.cm{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);
+  display:flex;flex-direction:column;overflow:hidden}
+.cmh{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.aibdg{background:var(--vd);border:1px solid rgba(139,92,246,.3);padding:3px 9px;border-radius:20px;
+  font-size:10.5px;font-weight:700;color:var(--v);font-family:'JetBrains Mono',monospace}
+.msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.ce{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--t3);gap:8px}
+.msg{display:flex;flex-direction:column;gap:3px;max-width:72%}
+.msg.user{align-self:flex-end;align-items:flex-end}
+.msg.assistant{align-self:flex-start;align-items:flex-start}
+.mb{padding:10px 14px;border-radius:13px;font-size:13.5px;line-height:1.65;word-break:break-word}
+.msg.user .mb{background:var(--v);color:#fff;border-radius:13px 13px 3px 13px}
+.msg.assistant .mb{background:var(--bg3);color:var(--t1);border:1px solid var(--border);border-radius:13px 13px 13px 3px}
+.mta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);padding:0 3px}
+.cia{padding:13px 15px;border-top:1px solid var(--border);display:flex;gap:9px}
+.ci{flex:1;padding:11px 14px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:11px;color:var(--t1);font-size:13.5px;resize:none;height:44px;transition:.15s}
+.ci:focus{border-color:var(--v)}
+.csend{padding:0 15px;background:var(--v);border-radius:11px;color:#fff;
+  font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;transition:.13s}
+.csend:hover{opacity:.86}
+.csend:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── MODAL ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;animation:fi .15s ease}
+.mbox{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:26px;
+  width:100%;max-width:450px;max-height:90vh;overflow-y:auto;animation:su .2s ease}
+.mt{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:18px;color:var(--t1)}
+.mf{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+
+/* ── EMPTY / ERROR / LOADING ── */
+.emp{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 20px;text-align:center;color:var(--t3)}
+.emico{font-size:44px;margin-bottom:14px;opacity:.25}
+.emtit{font-size:15px;font-weight:600;color:var(--t2);margin-bottom:6px}
+.emsub{font-size:12.5px}
+.spin{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--v);
+  border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+.lw{display:flex;align-items:center;justify-content:center;padding:40px}
+.aibar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:9px}
+.aibf{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--v),var(--blue));transition:width .5s}
+
+/* ── TOASTS ── */
+#toasts{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.tst{padding:11px 16px;border-radius:9px;font-size:12.5px;font-weight:500;
+  animation:su .2s ease,fo .3s ease 2.7s forwards;max-width:300px}
+.tst-success{background:rgba(74,222,128,.13);border:1px solid rgba(74,222,128,.28);color:var(--green)}
+.tst-error{background:rgba(248,113,113,.13);border:1px solid rgba(248,113,113,.28);color:var(--red)}
+.tst-info{background:rgba(139,92,246,.13);border:1px solid rgba(139,92,246,.28);color:var(--v)}
+
+/* ── ANIMS ── */
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes su{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fo{from{opacity:1}to{opacity:0}}
+@keyframes sp{to{transform:rotate(360deg)}}
+.fade{animation:fi .2s ease}
+.hidden{display:none!important}
+
+/* ── AI PROGRESS BAR ── */
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sb{width:100%;min-height:auto;position:static;flex-direction:row;padding:10px;
+    border-right:none;border-bottom:1px solid var(--border)}
+  .sb-logo{padding:0 8px 0 0}
+  .sb-nav{flex-direction:row}
+  .ni span{display:none}
+  .sb-foot{display:none}
+  .mn{margin-left:0;padding:16px}
+  .sg{grid-template-columns:repeat(2,1fr)}
+  .cl{grid-template-columns:1fr;height:auto}
+  .cs{display:none}
+  #app{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ AUTH ═══════ -->
+<div id="auth">
+  <div class="auth-card">
+    <div class="logo">Персональный <span>Ассистент</span></div>
+    <p class="tagline" id="auth-tagline">Your intelligent personal assistant</p>
+    <div class="tabs">
+      <button class="tab on" id="tl" onclick="swTab('login')" data-i18n="auth_tab_signin">Sign in</button>
+      <button class="tab" id="tr" onclick="swTab('reg')" data-i18n="auth_tab_register">Create account</button>
+    </div>
+
+    <div id="auth-err" style="display:none;background:rgba(248,113,113,.13);border:1px solid rgba(248,113,113,.3);
+      border-radius:8px;padding:10px 13px;font-size:13px;color:var(--red);margin-bottom:14px;line-height:1.4"></div>
+
+    <form id="lf" onsubmit="doLogin(event)">
+      <div class="fg"><label class="fl" data-i18n="auth_email">Email</label>
+        <input class="fi" type="email" id="le" placeholder="you@example.com" required></div>
+      <div class="fg"><label class="fl" data-i18n="auth_password">Password</label>
+        <input class="fi" type="password" id="lp" placeholder="••••••••" required></div>
+      <button type="submit" class="btn-p" id="lb" data-i18n="auth_tab_signin">Sign in</button>
+    </form>
+
+    <form id="rf" class="hidden" onsubmit="doReg(event)">
+      <div class="frow">
+        <div class="fg"><label class="fl" data-i18n="auth_firstname">First name</label>
+          <input class="fi" id="rfn" placeholder="Alex"></div>
+        <div class="fg"><label class="fl" data-i18n="auth_lastname">Last name</label>
+          <input class="fi" id="rln" placeholder="Smith"></div>
+      </div>
+      <div class="fg"><label class="fl" data-i18n="auth_email">Email</label>
+        <input class="fi" type="email" id="re" placeholder="you@example.com" required></div>
+      <div class="fg"><label class="fl" data-i18n="auth_password">Password</label>
+        <input class="fi" type="password" id="rp" placeholder="Min 8 characters" required></div>
+      <button type="submit" class="btn-p" id="rb" data-i18n="auth_tab_register">Create account</button>
+    </form>
+  </div>
+
+  <!-- lang + theme controls on auth page -->
+  <div id="auth-controls" style="position:fixed;top:16px;right:16px;display:flex;gap:6px;z-index:10">
+    <button onclick="setLang('en')" id="auth-en" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--bg2);color:var(--t2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s">EN</button>
+    <button onclick="setLang('ru')" id="auth-ru" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--bg2);color:var(--t2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s">RU</button>
+    <button onclick="toggleTheme()" id="auth-theme" style="padding:5px 8px;border-radius:7px;border:1px solid var(--border2);background:var(--bg2);color:var(--t2);font-size:13px;cursor:pointer;transition:all .2s" title="Toggle theme">☀️</button>
+  </div>
+</div>
+
+<!-- ═══════ APP ═══════ -->
+<div id="app" style="display:none;min-height:100vh;flex-direction:row">
+  <aside class="sb">
+    <div class="sb-logo">ПА<span style="color:var(--v)">.</span></div>
+    <nav class="sb-nav">
+      <div class="ni on" data-p="dashboard" onclick="go('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span data-i18n="nav_dashboard">Dashboard</span></div>
+      <div class="ni" data-p="tasks" onclick="go('tasks')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span data-i18n="nav_tasks">Tasks</span></div>
+      <div class="ni" data-p="notes" onclick="go('notes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <span data-i18n="nav_notes">Notes</span></div>
+      <div class="ni" data-p="reminders" onclick="go('reminders')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span data-i18n="nav_reminders">Reminders</span></div>
+      <div class="ni" data-p="chat" onclick="go('chat')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        <span data-i18n="nav_chat">AI Chat</span></div>
+      <div class="ni" data-p="health" onclick="go('health')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span data-i18n="nav_health">Health</span></div>
+    </nav>
+    <div class="sb-foot">
+      <div class="uinfo">
+        <div class="uav" id="uav">D</div>
+        <div style="min-width:0">
+          <div class="uname" id="unm">—</div>
+          <div class="uemail" id="uem">—</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button id="btn-en" onclick="setLang('en')" style="flex:1;padding:5px;border-radius:7px;border:1px solid var(--br);background:var(--s2);color:var(--t2);font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s">EN</button>
+        <button id="btn-ru" onclick="setLang('ru')" style="flex:1;padding:5px;border-radius:7px;border:1px solid var(--br);background:var(--s2);color:var(--t2);font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s">RU</button>
+        <button id="btn-theme" onclick="toggleTheme()" style="padding:5px 8px;border-radius:7px;border:1px solid var(--br);background:var(--s2);color:var(--t2);font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s" title="Toggle theme">☀️</button>
+      </div>
+      <button class="btn-out" onclick="logout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span data-i18n="btn_signout">Sign out</span></button>
+    </div>
+  </aside>
+  <main class="mn"><div id="pc" class="fade"></div></main>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let tok = localStorage.getItem('pa_tok');
+let me = JSON.parse(localStorage.getItem('pa_me')||'null');
+let page = 'dashboard';
+let tf = {s:'',p:''};
+let chatSid = null;
+
+// ════════════════════════════════════════════
+// i18n
+// ════════════════════════════════════════════
+const LANGS = {
+  en: {
+    nav_dashboard:'Dashboard', nav_tasks:'Tasks', nav_notes:'Notes',
+    nav_reminders:'Reminders', nav_chat:'AI Chat', nav_health:'Health',
+    btn_signout:'Sign out', btn_save:'Save', btn_cancel:'Cancel', btn_delete:'Delete',
+    dash_title:'Dashboard', dash_morning:'Good morning', dash_afternoon:'Good afternoon', dash_evening:'Good evening',
+    dash_total:'Total Tasks', dash_done:'Completed', dash_overdue:'Overdue', dash_notes:'Notes',
+    dash_ai:'AI Usage', dash_qa1:'My tasks', dash_qa2:'What to focus on?', dash_qa3:'Set a reminder',
+    tasks_title:'Tasks', tasks_new:'New Task',
+    tasks_all:'All', tasks_todo:'To Do', tasks_progress:'In Progress', tasks_done:'Done',
+    tasks_empty:'No tasks here', tasks_empty_sub:'Create your first task to get started',
+    tasks_ttl:'Title', tasks_desc:'Description', tasks_priority:'Priority', tasks_due:'Due date', tasks_status:'Status', tasks_cat:'Category',
+    notes_title:'Notes', notes_new:'New Note',
+    notes_all:'All', notes_pinned:'Pinned', notes_archived:'Archived',
+    notes_empty:'No notes yet', notes_empty_sub:'Create your first note',
+    notes_ttl:'Title', notes_content:'Content', notes_pin:'Pin note',
+    rem_title:'Reminders', rem_new:'New Reminder',
+    rem_empty:'No reminders', rem_empty_sub:'Set your first reminder',
+    rem_ttl:'Title', rem_msg:'Message (optional)', rem_at:'Remind at', rem_cancel:'Cancel reminder',
+    chat_title:'AI Chat', chat_powered:'Powered by Groq', chat_new:'New Chat',
+    chat_placeholder:'Message your assistant...', chat_send:'Send',
+    chat_no_sessions:'No sessions yet', chat_start:'Start a new conversation', chat_ask:'Ask me anything!',
+    health_title:'System Health', health_sub:'Live infrastructure status',
+    health_refresh:'Refresh', health_ok:'All Systems Operational', health_down:'System Degraded',
+    health_api:'API Endpoint Status',
+    auth_tab_signin:'Sign in', auth_tab_register:'Create account',
+    auth_email:'Email', auth_password:'Password', auth_firstname:'First name', auth_lastname:'Last name',
+    err_internal:'Internal server error', err_connect:'Cannot connect to server',
+  },
+  ru: {
+    nav_dashboard:'Дашборд', nav_tasks:'Задачи', nav_notes:'Заметки',
+    nav_reminders:'Напоминания', nav_chat:'ИИ Чат', nav_health:'Здоровье',
+    btn_signout:'Выйти', btn_save:'Сохранить', btn_cancel:'Отмена', btn_delete:'Удалить',
+    dash_title:'Дашборд', dash_morning:'Доброе утро', dash_afternoon:'Добрый день', dash_evening:'Добрый вечер',
+    dash_total:'Всего задач', dash_done:'Выполнено', dash_overdue:'Просрочено', dash_notes:'Заметки',
+    dash_ai:'Использование ИИ', dash_qa1:'Мои задачи', dash_qa2:'На чём сосредоточиться?', dash_qa3:'Поставить напоминание',
+    tasks_title:'Задачи', tasks_new:'Новая задача',
+    tasks_all:'Все', tasks_todo:'К выполнению', tasks_progress:'В процессе', tasks_done:'Готово',
+    tasks_empty:'Задач нет', tasks_empty_sub:'Создайте первую задачу',
+    tasks_ttl:'Название', tasks_desc:'Описание', tasks_priority:'Приоритет', tasks_due:'Срок', tasks_status:'Статус', tasks_cat:'Категория',
+    notes_title:'Заметки', notes_new:'Новая заметка',
+    notes_all:'Все', notes_pinned:'Закреплённые', notes_archived:'Архив',
+    notes_empty:'Заметок нет', notes_empty_sub:'Создайте первую заметку',
+    notes_ttl:'Заголовок', notes_content:'Содержание', notes_pin:'Закрепить',
+    rem_title:'Напоминания', rem_new:'Новое напоминание',
+    rem_empty:'Напоминаний нет', rem_empty_sub:'Создайте первое напоминание',
+    rem_ttl:'Название', rem_msg:'Сообщение (необязательно)', rem_at:'Дата и время', rem_cancel:'Отменить',
+    chat_title:'ИИ Чат', chat_powered:'На базе Groq', chat_new:'Новый чат',
+    chat_placeholder:'Напишите ассистенту...', chat_send:'Отправить',
+    chat_no_sessions:'Сессий пока нет', chat_start:'Начните новый разговор', chat_ask:'Спросите меня что угодно!',
+    health_title:'Здоровье системы', health_sub:'Статус инфраструктуры в реальном времени',
+    health_refresh:'Обновить', health_ok:'Все системы работают', health_down:'Система деградировала',
+    health_api:'Статус API эндпоинтов',
+    auth_tab_signin:'Войти', auth_tab_register:'Создать аккаунт',
+    auth_email:'Email', auth_password:'Пароль', auth_firstname:'Имя', auth_lastname:'Фамилия',
+    err_internal:'Внутренняя ошибка сервера', err_connect:'Нет соединения с сервером',
+  }
+};
+let lang = localStorage.getItem('pa_lang') || 'ru';
+let theme = localStorage.getItem('pa_theme') || 'dark';
+function t(k){ return LANGS[lang][k] || LANGS.en[k] || k; }
+function syncLangBtns(l){
+  ['en','ru'].forEach(code=>{
+    const on = l===code;
+    const ac = 'var(--ac)', def = 'var(--s2)';
+    ['btn-'+code, 'auth-'+code].forEach(id=>{
+      const el=document.getElementById(id); if(!el) return;
+      el.style.background = on ? ac : def;
+      el.style.color      = on ? '#fff' : 'var(--t2)';
+    });
+  });
+}
+function setLang(l){
+  lang = l;
+  localStorage.setItem('pa_lang', l);
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  syncLangBtns(l);
+  if(document.getElementById('app').style.display!=='none') go(page);
+}
+function setTheme(th){
+  theme = th;
+  localStorage.setItem('pa_theme', th);
+  document.body.classList.toggle('light', th==='light');
+  ['btn-theme','auth-theme'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent = th==='light' ? '🌙' : '☀️';
+  });
+}
+function toggleTheme(){ setTheme(theme==='dark'?'light':'dark'); }
+
+// ════════════════════════════════════════════
+// API
+// ════════════════════════════════════════════
+async function api(method, path, body){
+  const o={method,headers:{'Content-Type':'application/json'}};
+  if(tok) o.headers['Authorization']='Bearer '+tok;
+  if(body) o.body=JSON.stringify(body);
+  try{
+    const r=await fetch(path,o);
+    if(r.status===401){
+      if(path.startsWith('/api/v1/auth/')){
+        throw new Error(lang==='ru'?'Неверный email или пароль. Проверьте данные и попробуйте снова.':'Invalid email or password. Please check your credentials.');
+      }
+      logout();return null;
+    }
+    if(r.status===204) return null;
+    const d=await r.json().catch(()=>null);
+    if(!r.ok) throw new Error(d?.message||'Error '+r.status);
+    return d;
+  }catch(e){
+    if(e.message==='Failed to fetch') throw new Error('Cannot connect to server. Is the backend running?');
+    throw e;
+  }
+}
+
+// ════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════
+function swTab(t){
+  document.getElementById('lf').classList.toggle('hidden',t!=='login');
+  document.getElementById('rf').classList.toggle('hidden',t!=='reg');
+  document.getElementById('tl').classList.toggle('on',t==='login');
+  document.getElementById('tr').classList.toggle('on',t==='reg');
+}
+function authErr(msg){
+  const el=document.getElementById('auth-err');
+  if(!el) return;
+  if(msg){el.textContent=msg;el.style.display='block';}
+  else{el.textContent='';el.style.display='none';}
+}
+async function doLogin(e){
+  e.preventDefault();
+  authErr('');
+  const b=document.getElementById('lb');
+  b.disabled=true;b.textContent=lang==='ru'?'Вход…':'Signing in…';
+  try{
+    const d=await api('POST','/api/v1/auth/login',{email:v('le'),password:v('lp')});
+    if(d) setMe(d);
+  }catch(err){authErr(err.message)}
+  finally{b.disabled=false;b.textContent=lang==='ru'?'Войти':'Sign in'}
+}
+async function doReg(e){
+  e.preventDefault();
+  authErr('');
+  const b=document.getElementById('rb');
+  b.disabled=true;b.textContent=lang==='ru'?'Создание…':'Creating…';
+  try{
+    const d=await api('POST','/api/v1/auth/register',{email:v('re'),password:v('rp'),firstName:v('rfn'),lastName:v('rln')});
+    if(d) setMe(d);
+  }catch(err){authErr(err.message)}
+  finally{b.disabled=false;b.textContent=lang==='ru'?'Создать аккаунт':'Create account'}
+}
+function setMe(d){
+  tok=d.accessToken; me={email:d.email,fullName:d.fullName,role:d.role};
+  localStorage.setItem('pa_tok',tok);
+  localStorage.setItem('pa_me',JSON.stringify(me));
+  showApp();
+}
+function logout(){
+  tok=null;me=null;
+  localStorage.removeItem('pa_tok');localStorage.removeItem('pa_me');
+  document.getElementById('auth').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
+
+// ════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════
+function showApp(){
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').style.display='flex';
+  setTheme(theme);
+  const nm=me?.fullName||me?.email||'User';
+  document.getElementById('uav').textContent=nm.charAt(0).toUpperCase();
+  document.getElementById('unm').textContent=nm;
+  document.getElementById('uem').textContent=me?.email||'';
+  // apply saved language
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+  const activeLang=lang;
+  document.getElementById('btn-en').style.background=activeLang==='en'?'var(--ac)':'var(--s2)';
+  document.getElementById('btn-en').style.color=activeLang==='en'?'#fff':'var(--t2)';
+  document.getElementById('btn-ru').style.background=activeLang==='ru'?'var(--ac)':'var(--s2)';
+  document.getElementById('btn-ru').style.color=activeLang==='ru'?'#fff':'var(--t2)';
+  go('dashboard');
+}
+function go(p){
+  page=p;
+  document.querySelectorAll('.ni').forEach(el=>el.classList.toggle('on',el.dataset.p===p));
+  const el=document.getElementById('pc');
+  el.className='fade';
+  switch(p){
+    case 'dashboard': pDash(); break;
+    case 'tasks': pTasks(); break;
+    case 'notes': pNotes(); break;
+    case 'reminders': pRems(); break;
+    case 'chat': pChat(); break;
+    case 'health': pHealth(); break;
+  }
+}
+
+// ════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════
+async function pDash(){
+  const el=pc();
+  el.innerHTML=lw();
+  try{
+    const s=await api('GET','/api/v1/stats');
+    if(!s) return;
+    const pct=s.aiRequestsLimit>0?Math.round(s.aiRequestsUsed/s.aiRequestsLimit*100):0;
+    const h=new Date().getHours();
+    const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+    const nm=me?.fullName?.split(' ')[0]||'there';
+    el.innerHTML=`
+    <div class="ph">
+      <div><h1 class="pt">${g}, ${nm} 👋</h1>
+      <p class="ps">${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p></div>
+    </div>
+    <div class="sg">
+      <div class="sc cv"><div class="sl">Total Tasks</div><div class="sv">${s.totalTasks}</div><div class="ss">${s.completedTasks} completed</div><div class="sico">✅</div></div>
+      <div class="sc cg"><div class="sl">Completed</div><div class="sv">${s.completedTasks}</div><div class="ss">${s.totalTasks>0?Math.round(s.completedTasks/s.totalTasks*100):0}% done</div><div class="sico">🎯</div></div>
+      <div class="sc ca"><div class="sl">Overdue</div><div class="sv">${s.overdueTasks}</div><div class="ss">${s.pendingTasks} pending</div><div class="sico">⚠️</div></div>
+      <div class="sc cb"><div class="sl">Notes</div><div class="sv">${s.totalNotes}</div><div class="ss">${s.pinnedNotes} pinned</div><div class="sico">📝</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">AI Usage this month</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:9px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700">${s.aiRequestsUsed}</span>
+          <span style="font-size:12px;color:var(--t2)">/ ${s.aiRequestsLimit} requests</span>
+        </div>
+        <div class="aibar"><div class="aibf" style="width:${pct}%"></div></div>
+        <div style="font-size:11px;color:var(--t3);margin-top:7px">${pct}% used · ${s.totalChatSessions} sessions</div>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Quick actions</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <button class="btn btn-g" style="justify-content:flex-start" onclick="go('tasks');setTimeout(mTask,50)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New task</button>
+          <button class="btn btn-g" style="justify-content:flex-start" onclick="go('notes');setTimeout(mNote,50)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New note</button>
+          <button class="btn btn-g" style="justify-content:flex-start" onclick="go('chat')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> Chat with AI</button>
+        </div>
+      </div>
+    </div>`;
+  }catch(e){el.innerHTML=errS(e.message)}
+}
+
+// ════════════════════════════════════════════
+// TASKS
+// ════════════════════════════════════════════
+function pTasks(){
+  const el=pc();
+  el.innerHTML=`
+  <div class="ph">
+    <div><h1 class="pt">Tasks</h1><p class="ps">Manage your to-dos</p></div>
+    <button class="btn btn-v" onclick="mTask()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Task</button>
+  </div>
+  <div class="fb">
+    <button class="fbt ${tf.s===''?'on':''}" onclick="setTF('s','')">All</button>
+    <button class="fbt ${tf.s==='TODO'?'on':''}" onclick="setTF('s','TODO')">Todo</button>
+    <button class="fbt ${tf.s==='IN_PROGRESS'?'on':''}" onclick="setTF('s','IN_PROGRESS')">In Progress</button>
+    <button class="fbt ${tf.s==='DONE'?'on':''}" onclick="setTF('s','DONE')">Done</button>
+    <div class="sep"></div>
+    <button class="fbt ${tf.p==='CRITICAL'?'on':''}" onclick="setTF('p','CRITICAL')">🔴 Critical</button>
+    <button class="fbt ${tf.p==='HIGH'?'on':''}" onclick="setTF('p','HIGH')">🟡 High</button>
+    <button class="fbt ${tf.p==='MEDIUM'?'on':''}" onclick="setTF('p','MEDIUM')">🔵 Medium</button>
+    ${tf.s||tf.p?`<button class="fbt" onclick="setTF('s','');setTF('p','')">✕ Clear</button>`:''}
+  </div>
+  <div id="tlist">${lw()}</div>`;
+  lTasks();
+}
+async function lTasks(){
+  const el=document.getElementById('tlist'); if(!el) return;
+  try{
+    let url='/api/v1/tasks?size=50';
+    if(tf.s) url+=`&status=${tf.s}`;
+    if(tf.p) url+=`&priority=${tf.p}`;
+    const d=await api('GET',url); if(!d) return;
+    const ts=d.content||[];
+    if(!ts.length){el.innerHTML=emp('✅','No tasks yet','Create your first task to get started');return}
+    el.innerHTML=`<div class="tl">${ts.map(tCard).join('')}</div>`;
+  }catch(e){el.innerHTML=errS(e.message)}
+}
+function tCard(t){
+  const ck=t.status==='DONE';
+  const pr=t.priority.toLowerCase();
+  const st=t.status.toLowerCase().replace('_','');
+  return `<div class="ti p${pr[0]} ${ck?'sd':''}">
+    <div class="chk ${ck?'ck':''}" onclick="doneTask(${t.id},'${t.status}')">
+      <svg viewBox="0 0 12 10" fill="none"><polyline points="1,5 4,8 11,1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="tb">
+      <div class="tt">${esc(t.title)}</div>
+      <div class="tm">
+        <span class="bdg bdg-${t.status.toLowerCase()}">${t.status.replace('_',' ')}</span>
+        <span class="bdg bdg-${pr}">${t.priority}</span>
+        ${t.dueDate?`<span class="tdue">📅 ${t.dueDate}</span>`:''}
+        ${t.category?`<span style="font-size:11px;color:var(--t3)">${esc(t.category)}</span>`:''}
+      </div>
+    </div>
+    <div class="tac">
+      <button class="bic" onclick="delTask(${t.id})" title="Delete">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+function setTF(k,vl){tf[k]=vl;pTasks()}
+async function doneTask(id,st){
+  if(st==='DONE') return;
+  try{await api('PATCH',`/api/v1/tasks/${id}/complete`);toast('Task completed!','success');lTasks()}
+  catch(e){toast(e.message,'error')}
+}
+async function delTask(id){
+  if(!confirm('Delete this task?')) return;
+  try{await api('DELETE',`/api/v1/tasks/${id}`);toast('Deleted','info');lTasks()}
+  catch(e){toast(e.message,'error')}
+}
+function mTask(){
+  modal(`<h2 class="mt">New Task</h2>
+    <div class="fg"><label class="fl">Title *</label><input class="fi" id="mt-t" placeholder="What needs to be done?" autofocus></div>
+    <div class="fg"><label class="fl">Description</label><textarea class="fi" id="mt-d" placeholder="Details…"></textarea></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Priority</label>
+        <select class="fi" id="mt-p"><option value="LOW">Low</option><option value="MEDIUM" selected>Medium</option><option value="HIGH">High</option><option value="CRITICAL">Critical</option></select></div>
+      <div class="fg"><label class="fl">Due Date</label><input class="fi" type="date" id="mt-dd"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Category</label><input class="fi" id="mt-c" placeholder="Work, Study…"></div>
+      <div class="fg"><label class="fl">Status</label>
+        <select class="fi" id="mt-s"><option value="TODO">Todo</option><option value="IN_PROGRESS">In Progress</option></select></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-v" onclick="saveTask()">Create Task</button>
+    </div>`);
+}
+async function saveTask(){
+  const t=v('mt-t');
+  if(!t){toast('Title required','error');return}
+  try{
+    await api('POST','/api/v1/tasks',{title:t,description:v('mt-d'),priority:v('mt-p'),
+      status:v('mt-s'),dueDate:v('mt-dd')||null,category:v('mt-c')||null});
+    closeModal();toast('Task created!','success');lTasks();
+  }catch(e){toast(e.message,'error')}
+}
+
+// ════════════════════════════════════════════
+// NOTES
+// ════════════════════════════════════════════
+function pNotes(){
+  const el=pc();
+  el.innerHTML=`
+  <div class="ph">
+    <div><h1 class="pt">Notes</h1><p class="ps">Your ideas and knowledge</p></div>
+    <button class="btn btn-v" onclick="mNote()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Note</button>
+  </div>
+  <div id="ngrid">${lw()}</div>`;
+  lNotes();
+}
+async function lNotes(){
+  const el=document.getElementById('ngrid'); if(!el) return;
+  try{
+    const d=await api('GET','/api/v1/notes?size=50'); if(!d) return;
+    const ns=d.content||[];
+    if(!ns.length){el.innerHTML=emp('📝','No notes yet','Capture your ideas and thoughts');return}
+    el.innerHTML=`<div class="ng">${ns.map(nCard).join('')}</div>`;
+  }catch(e){el.innerHTML=errS(e.message)}
+}
+function nCard(n){
+  const dt=n.createdAt?new Date(n.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+  return `<div class="nc ${n.pinned?'pn':''}">
+    <div class="npin">📌</div>
+    <div class="ntit">${esc(n.title)}</div>
+    <div class="ncnt">${esc(n.content)}</div>
+    <div class="nft">
+      <span class="ndt">${dt}</span>
+      <div class="nac">
+        <button class="bic" onclick="pinNote(${n.id},${n.pinned})" title="${n.pinned?'Unpin':'Pin'}" style="${n.pinned?'color:var(--v)':''}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="${n.pinned?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </button>
+        <button class="bic" onclick="archNote(${n.id})" title="Archive">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        </button>
+        <button class="bic" onclick="delNote(${n.id})" title="Delete" style="color:var(--red);opacity:.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+async function pinNote(id,pn){
+  try{await api('PATCH',`/api/v1/notes/${id}/pin`);toast(pn?'Unpinned':'Pinned!','success');lNotes()}
+  catch(e){toast(e.message,'error')}
+}
+async function archNote(id){
+  try{await api('PATCH',`/api/v1/notes/${id}/archive`);toast('Archived','info');lNotes()}
+  catch(e){toast(e.message,'error')}
+}
+async function delNote(id){
+  if(!confirm('Delete this note?')) return;
+  try{await api('DELETE',`/api/v1/notes/${id}`);toast('Deleted','info');lNotes()}
+  catch(e){toast(e.message,'error')}
+}
+function mNote(){
+  modal(`<h2 class="mt">New Note</h2>
+    <div class="fg"><label class="fl">Title *</label><input class="fi" id="mn-t" placeholder="Note title…" autofocus></div>
+    <div class="fg"><label class="fl">Content *</label><textarea class="fi" id="mn-c" placeholder="Write your thoughts…" style="min-height:110px"></textarea></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">Category</label><input class="fi" id="mn-cat" placeholder="Dev, Ideas…"></div>
+      <div class="fg"><label class="fl">Tags</label><input class="fi" id="mn-tg" placeholder="spring, java…"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <input type="checkbox" id="mn-p" style="width:15px;height:15px;accent-color:var(--v)">
+      <label for="mn-p" style="font-size:13px;color:var(--t2)">Pin this note</label>
+    </div>
+    <div class="mf">
+      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-v" onclick="saveNote()">Create Note</button>
+    </div>`);
+}
+async function saveNote(){
+  const t=v('mn-t'),c=v('mn-c');
+  if(!t||!c){toast('Title and content required','error');return}
+  try{
+    await api('POST','/api/v1/notes',{title:t,content:c,category:v('mn-cat')||null,tags:v('mn-tg')||null,
+      pinned:document.getElementById('mn-p')?.checked||false});
+    closeModal();toast('Note saved!','success');lNotes();
+  }catch(e){toast(e.message,'error')}
+}
+
+// ════════════════════════════════════════════
+// REMINDERS
+// ════════════════════════════════════════════
+function pRems(){
+  const el=pc();
+  el.innerHTML=`
+  <div class="ph">
+    <div><h1 class="pt">Reminders</h1><p class="ps">Never miss a deadline</p></div>
+    <button class="btn btn-v" onclick="mRem()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Reminder</button>
+  </div>
+  <div id="rlist">${lw()}</div>`;
+  lRems();
+}
+async function lRems(){
+  const el=document.getElementById('rlist'); if(!el) return;
+  try{
+    const d=await api('GET','/api/v1/reminders?size=50'); if(!d) return;
+    const rs=d.content||[];
+    if(!rs.length){el.innerHTML=emp('⏰','No reminders','Set a reminder so you never forget');return}
+    el.innerHTML=`<div class="rl">${rs.map(rCard).join('')}</div>`;
+  }catch(e){el.innerHTML=errS(e.message)}
+}
+function rCard(r){
+  const dt=r.remindAt?new Date(r.remindAt).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+  return `<div class="ri">
+    <div class="rdot ${r.status.toLowerCase()}"></div>
+    <div class="rb">
+      <div class="rtit">${esc(r.title)}</div>
+      <div class="rtm">${dt}</div>
+      ${r.message?`<div class="rmsg">${esc(r.message)}</div>`:''}
+    </div>
+    <span class="bdg bdg-${r.status.toLowerCase()}">${r.status}</span>
+    ${r.status==='PENDING'?`<button class="btn btn-g bsm" onclick="cancelRem(${r.id})">Cancel</button>`:''}
+    <button class="bic" onclick="delRem(${r.id})" style="color:var(--red);opacity:.5">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+    </button>
+  </div>`;
+}
+async function cancelRem(id){
+  try{await api('PATCH',`/api/v1/reminders/${id}/cancel`);toast('Cancelled','info');lRems()}
+  catch(e){toast(e.message,'error')}
+}
+async function delRem(id){
+  if(!confirm('Delete?')) return;
+  try{await api('DELETE',`/api/v1/reminders/${id}`);toast('Deleted','info');lRems()}
+  catch(e){toast(e.message,'error')}
+}
+function mRem(){
+  const d=new Date(Date.now()+3600000);
+  const pad=n=>String(n).padStart(2,'0');
+  const def=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  modal(`<h2 class="mt">New Reminder</h2>
+    <div class="fg"><label class="fl">Title *</label><input class="fi" id="mr-t" placeholder="What to remind?" autofocus></div>
+    <div class="fg"><label class="fl">Message</label><input class="fi" id="mr-m" placeholder="Optional note…"></div>
+    <div class="fg"><label class="fl">When *</label><input class="fi" type="datetime-local" id="mr-dt" value="${def}"></div>
+    <div class="fg"><label class="fl">Repeat every N minutes (0 = off)</label><input class="fi" type="number" id="mr-r" value="0" min="0"></div>
+    <div class="mf">
+      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-v" onclick="saveRem()">Set Reminder</button>
+    </div>`);
+}
+async function saveRem(){
+  const t=v('mr-t'),dt=v('mr-dt');
+  if(!t||!dt){toast('Title and time required','error');return}
+  try{
+    await api('POST','/api/v1/reminders',{title:t,message:v('mr-m')||null,
+      remindAt:new Date(dt).toISOString(),repeatMinutes:parseInt(v('mr-r')||'0')});
+    closeModal();toast('Reminder set!','success');lRems();
+  }catch(e){toast(e.message,'error')}
+}
+
+// ════════════════════════════════════════════
+// CHAT
+// ════════════════════════════════════════════
+function pChat(){
+  const el=pc();
+  el.innerHTML=`
+  <div class="ph">
+    <div><h1 class="pt">${t('chat_title')}</h1><p class="ps">${t('chat_powered')}</p></div>
+    <button class="btn btn-g" onclick="newChat()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      ${t('chat_new')}</button>
+  </div>
+  <div class="cl">
+    <div class="cs">
+      <div class="csh">Sessions <span id="sc" style="font-family:'JetBrains Mono',monospace;font-size:10px">—</span></div>
+      <div class="csl" id="slist">${lw()}</div>
+    </div>
+    <div class="cm">
+      <div class="cmh">
+        <div class="aibdg">AI</div>
+        <span id="ctit" style="font-size:13px;color:var(--t2)">${t('chat_start')}</span>
+      </div>
+      <div class="msgs" id="msgs">
+        <div class="ce">
+          <div style="font-size:38px;opacity:.2">🤖</div>
+          <div style="font-size:14px;font-weight:600;color:var(--t2)">${t('chat_start')}</div>
+          <div style="font-size:12px;margin-top:3px">${t('chat_ask')}</div>
+        </div>
+      </div>
+      <div class="cia">
+        <textarea class="ci" id="ci" placeholder="${t('chat_placeholder')}" onkeydown="ckd(event)"></textarea>
+        <button class="csend" id="csnd" onclick="sendMsg()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          ${t('chat_send')}</button>
+      </div>
+    </div>
+  </div>`;
+  lSessions();
+}
+async function lSessions(){
+  const el=document.getElementById('slist'); if(!el) return;
+  try{
+    const d=await api('GET','/api/v1/chat/sessions?page=0&size=50&sort=createdAt,desc');
+    if(!d){el.innerHTML=`<div style="padding:14px;text-align:center;font-size:12px;color:var(--t3)">${t('chat_no_sessions')}</div>`;return}
+    const ss=d.content||[];
+    const sc=document.getElementById('sc'); if(sc) sc.textContent=ss.length||'';
+    if(!ss.length){el.innerHTML=`<div style="padding:14px;text-align:center;font-size:12px;color:var(--t3)">${t('chat_no_sessions')}</div>`;return}
+    const locale=lang==='ru'?'ru-RU':'en-US';
+    el.innerHTML=ss.map(s=>{
+      const dt=s.createdAt?new Date(s.createdAt).toLocaleDateString(locale,{month:'short',day:'numeric'}):'';
+      const active=chatSid===s.id||chatSid===Number(s.id);
+      return `<div class="si ${active?'on':''}" onclick="openSess(${s.id},this)">
+        <div class="sti">${esc(s.title)}</div><div class="sdt">${dt}</div></div>`;
+    }).join('');
+    // auto-restore last session when navigating back to chat
+    if(chatSid){
+      const activeEl=el.querySelector('.si.on');
+      if(activeEl) openSess(chatSid,activeEl);
+    } else if(ss.length){
+      const first=el.querySelector('.si');
+      if(first) openSess(ss[0].id,first);
+    }
+  }catch(e){el.innerHTML=`<div style="padding:14px;text-align:center;font-size:12px;color:var(--t3)">${t('err_connect')}</div>`}
+}
+async function openSess(id,el){
+  chatSid=id;
+  document.querySelectorAll('.si').forEach(e=>e.classList.remove('on'));
+  el.classList.add('on');
+  const msgs=document.getElementById('msgs'); if(!msgs) return;
+  msgs.innerHTML=lw();
+  try{
+    const ms=await api('GET',`/api/v1/chat/sessions/${id}/messages`);
+    if(!ms||!ms.length){msgs.innerHTML=`<div class="ce"><div style="font-size:28px;opacity:.2">💬</div><div style="font-size:13px;color:var(--t2)">${t('chat_start')}</div></div>`;return}
+    msgs.innerHTML=ms.map(m=>bub(m.role,m.content,m.createdAt)).join('');
+    msgs.scrollTop=msgs.scrollHeight;
+    document.getElementById('ctit').textContent=el.querySelector('.sti').textContent;
+  }catch(e){msgs.innerHTML=`<div class="ce"><div style="color:var(--t3)">${t('err_connect')}</div></div>`}
+}
+function newChat(){
+  chatSid=null;
+  document.querySelectorAll('.si').forEach(e=>e.classList.remove('on'));
+  const msgs=document.getElementById('msgs'); if(msgs)
+    msgs.innerHTML=`<div class="ce"><div style="font-size:38px;opacity:.2">🤖</div><div style="font-size:14px;font-weight:600;color:var(--t2)">${t('chat_start')}</div><div style="font-size:12px;margin-top:3px">${t('chat_ask')}</div></div>`;
+  document.getElementById('ctit').textContent='New conversation';
+  document.getElementById('ci')?.focus();
+}
+function mdToHtml(s){
+  if(!s) return '';
+  return esc(s)
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/`(.*?)`/g,'<code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px;font-family:monospace">$1</code>')
+    .replace(/\n/g,'<br>');
+}
+function bub(role,content,ts,actions){
+  const tm=ts?new Date(ts).toLocaleTimeString(lang==='ru'?'ru-RU':'en-US',{hour:'2-digit',minute:'2-digit'}):'';
+  let actHtml='';
+  if(actions&&actions.length){
+    actHtml=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);">`
+      +actions.map(a=>`<div style="font-size:11px;color:var(--t2);margin-top:4px">${esc(a)}</div>`).join('')
+      +'</div>';
+  }
+  return `<div class="msg ${role}"><div class="mb">${mdToHtml(content)}${actHtml}</div><div class="mta">${tm}</div></div>`;
+}
+function ckd(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}}
+async function sendMsg(){
+  const inp=document.getElementById('ci');
+  const msg=inp?.value?.trim(); if(!msg) return;
+  const btn=document.getElementById('csnd'); btn.disabled=true;
+  inp.value='';
+  const msgs=document.getElementById('msgs'); if(!msgs) return;
+  const ce=msgs.querySelector('.ce'); if(ce) ce.remove();
+  const ud=document.createElement('div'); ud.innerHTML=bub('user',msg,new Date().toISOString());
+  msgs.appendChild(ud.firstElementChild);
+  const think=document.createElement('div');
+  think.className='msg assistant'; think.id='think';
+  think.innerHTML=`<div class="mb" style="color:var(--t3)"><div class="spin" style="width:14px;height:14px"></div></div>`;
+  msgs.appendChild(think); msgs.scrollTop=msgs.scrollHeight;
+  try{
+    const d=await api('POST','/api/v1/chat',{message:msg,sessionId:chatSid||null});
+    think.remove();
+    if(d){
+      chatSid=d.sessionId;
+      document.getElementById('ctit').textContent=d.sessionTitle||t('chat_title');
+      const ad=document.createElement('div');
+      ad.innerHTML=bub('assistant',d.reply,d.timestamp,d.actionsPerformed);
+      msgs.appendChild(ad.firstElementChild); msgs.scrollTop=msgs.scrollHeight;
+      await lSessions();
+    }
+  }catch(e){think.remove();toast(e.message,'error')}
+  finally{btn.disabled=false}
+}
+
+// ════════════════════════════════════════════
+// HEALTH
+// ════════════════════════════════════════════
+async function pHealth(){
+  const el=pc();
+  el.innerHTML=`
+  <div class="ph">
+    <div><h1 class="pt">System Health</h1><p class="ps">Live infrastructure status</p></div>
+    <button class="btn btn-g" onclick="pHealth()" style="gap:6px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      Refresh</button>
+  </div>
+  <div id="hov" style="margin-bottom:24px">${lw()}</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px" id="hcards">${lw()}</div>
+  <div style="margin-top:28px" id="hpings">${lw()}</div>`;
+  await loadHealth();
+}
+
+async function loadHealth(){
+  const t0=performance.now();
+  let health={};
+  try{
+    const r=await fetch('/actuator/health',{headers:tok?{Authorization:'Bearer '+tok}:{}});
+    health=await r.json();
+  }catch(e){health={status:'DOWN',error:e.message}}
+  const ping=Math.round(performance.now()-t0);
+
+  const up=health.status==='UP';
+  const col=up?'#22c55e':'#ef4444';
+  const ov=document.getElementById('hov');
+  if(ov) ov.innerHTML=`
+  <div style="background:${up?'rgba(34,197,94,.07)':'rgba(239,68,68,.07)'};border:1px solid ${up?'rgba(34,197,94,.2)':'rgba(239,68,68,.2)'};border-radius:16px;padding:28px 32px;display:flex;align-items:center;gap:24px">
+    <div style="width:56px;height:56px;border-radius:50%;background:${up?'rgba(34,197,94,.15)':'rgba(239,68,68,.15)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <div style="width:20px;height:20px;border-radius:50%;background:${col};box-shadow:0 0 12px ${col}"></div>
+    </div>
+    <div style="flex:1">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:${col}">${up?'All Systems Operational':'System Degraded'}</div>
+      <div style="font-size:13px;color:var(--t2);margin-top:4px">Overall status: <b style="color:${col}">${health.status||'UNKNOWN'}</b> &nbsp;·&nbsp; Response time: <b style="color:var(--t1)">${ping}ms</b></div>
+    </div>
+    <div style="text-align:right;font-size:11px;color:var(--t3)">${new Date().toLocaleTimeString('ru-RU')}</div>
+  </div>`;
+
+  const comps=health.components||{};
+  const services=[
+    {key:'db',label:'PostgreSQL',icon:'🗄️',desc:'Primary database'},
+    {key:'redis',label:'Redis',icon:'⚡',desc:'Cache & sessions'},
+    {key:'kafka',label:'Kafka',icon:'📨',desc:'Event streaming'},
+    {key:'diskSpace',label:'Disk Space',icon:'💾',desc:'Storage'},
+    {key:'ping',label:'App Ping',icon:'🏓',desc:'Spring Boot'},
+  ];
+
+  const cards=document.getElementById('hcards');
+  if(cards) cards.innerHTML=services.map(svc=>{
+    const c=comps[svc.key];
+    const st=c?c.status:(svc.key==='kafka'?'UNKNOWN':'UNKNOWN');
+    const ok=st==='UP';
+    const sc=ok?'#22c55e':st==='UNKNOWN'?'#f59e0b':'#ef4444';
+    let detail='';
+    if(svc.key==='db'&&c?.details?.database) detail=c.details.database;
+    if(svc.key==='diskSpace'&&c?.details){
+      const free=c.details.free;
+      const total=c.details.total;
+      if(free&&total){
+        const freeMb=Math.round(free/1024/1024/1024*10)/10;
+        const totalMb=Math.round(total/1024/1024/1024*10)/10;
+        detail=`${freeMb}GB free / ${totalMb}GB total`;
+      }
+    }
+    if(svc.key==='redis'&&c?.details?.version) detail='v'+c.details.version;
+    return `<div style="background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:20px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;right:0;width:80px;height:80px;background:${sc};opacity:.04;border-radius:0 12px 0 80px"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:24px">${svc.icon}</div>
+        <div style="display:flex;align-items:center;gap:6px;background:${ok?'rgba(34,197,94,.1)':st==='UNKNOWN'?'rgba(245,158,11,.1)':'rgba(239,68,68,.1)'};padding:4px 10px;border-radius:20px">
+          <div style="width:6px;height:6px;border-radius:50%;background:${sc}"></div>
+          <span style="font-size:11px;font-weight:600;color:${sc}">${st}</span>
+        </div>
+      </div>
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--t1)">${svc.label}</div>
+      <div style="font-size:12px;color:var(--t3);margin-top:3px">${svc.desc}</div>
+      ${detail?`<div style="font-size:11px;color:var(--t2);margin-top:10px;padding-top:10px;border-top:1px solid var(--br)">${esc(detail)}</div>`:''}
+    </div>`;
+  }).join('');
+
+  // API endpoint ping table
+  const endpoints=[
+    {method:'GET',path:'/actuator/health',label:'Health check',pub:true},
+    {method:'POST',path:'/api/v1/auth/login',label:'Auth login',pub:true},
+    {method:'GET',path:'/api/v1/tasks',label:'Tasks API',pub:false},
+    {method:'GET',path:'/api/v1/notes',label:'Notes API',pub:false},
+    {method:'GET',path:'/api/v1/stats',label:'Stats API',pub:false},
+    {method:'GET',path:'/api/v1/chat/sessions',label:'Chat sessions',pub:false},
+  ];
+
+  const hp=document.getElementById('hpings');
+  if(hp){
+    hp.innerHTML=`<div style="background:var(--s1);border:1px solid var(--br);border-radius:12px;overflow:hidden">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--t1)">API Endpoint Status</div>
+        <div style="font-size:11px;color:var(--t3)">Live checks</div>
+      </div>
+      <div id="eptable"><div style="padding:20px">${lw()}</div></div>
+    </div>`;
+    checkEndpoints(endpoints);
+  }
+}
+
+async function checkEndpoints(endpoints){
+  const rows=await Promise.all(endpoints.map(async ep=>{
+    const t=performance.now();
+    let status=0,ok=false;
+    try{
+      const h={'Content-Type':'application/json'};
+      if(!ep.pub&&tok) h['Authorization']='Bearer '+tok;
+      const body=ep.method==='POST'&&ep.path.includes('login')?JSON.stringify({email:'__ping__',password:'__ping__'}):undefined;
+      const r=await fetch(ep.path,{method:ep.method,headers:h,body});
+      status=r.status;
+      ok=status<500;
+    }catch(e){status=0}
+    const ms=Math.round(performance.now()-t);
+    const stCol=status>=500||status===0?'#ef4444':status>=400?'#f59e0b':'#22c55e';
+    const stLabel=status===0?'ERR':String(status);
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--br)">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:4px;background:${ep.method==='GET'?'rgba(59,130,246,.15)':'rgba(168,85,247,.15)'};color:${ep.method==='GET'?'#60a5fa':'#c084fc'}">${ep.method}</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t2);flex:1">${ep.path}</span>
+      <span style="font-size:12px;color:var(--t3)">${ep.label}</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t3);min-width:52px;text-align:right">${ms}ms</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${stCol};min-width:32px;text-align:right">${stLabel}</span>
+    </div>`;
+  }));
+  const t=document.getElementById('eptable');
+  if(t) t.innerHTML=rows.join('')+'<div style="height:1px"></div>';
+}
+
+// ════════════════════════════════════════════
+// MODAL
+// ════════════════════════════════════════════
+function modal(html){
+  const ov=document.createElement('div');
+  ov.className='ov'; ov.id='modal-ov';
+  ov.innerHTML=`<div class="mbox">${html}</div>`;
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+  document.body.appendChild(ov);
+  ov.querySelector('input,textarea')?.focus();
+}
+function closeModal(){document.getElementById('modal-ov')?.remove()}
+
+// ════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════
+function pc(){return document.getElementById('pc')}
+function v(id){return document.getElementById(id)?.value?.trim()||''}
+function lw(){return `<div class="lw"><div class="spin"></div></div>`}
+function emp(ico,tit,sub){return `<div class="emp"><div class="emico">${ico}</div><div class="emtit">${tit}</div><div class="emsub">${sub}</div></div>`}
+function errS(msg){return `<div class="emp"><div class="emico">⚠️</div><div class="emtit">Something went wrong</div><div class="emsub">${esc(msg)}</div></div>`}
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function toast(msg,type='info'){
+  const el=document.createElement('div');
+  el.className=`tst tst-${type}`; el.textContent=msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>el.remove(),3100);
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+// apply theme and lang before anything is shown
+setTheme(theme);
+syncLangBtns(lang);
+document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+if(tok) showApp();
+</script>
+</body>
+</html>
