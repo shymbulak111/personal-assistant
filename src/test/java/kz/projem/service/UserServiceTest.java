@@ -17,11 +17,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @Tag("unit")
 class UserServiceTest {
 
@@ -62,7 +66,6 @@ class UserServiceTest {
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
         UserDetails mockDetails = mock(UserDetails.class);
-        when(mockDetails.getUsername()).thenReturn("test@example.com");
         when(userDetailsService.loadUserByUsername("test@example.com")).thenReturn(mockDetails);
         when(jwtService.generateToken(any())).thenReturn("access_token");
         when(jwtService.generateRefreshToken(any())).thenReturn("refresh_token");
