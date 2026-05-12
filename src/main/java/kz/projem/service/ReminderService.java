@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ public class ReminderService {
 
     private final ReminderRepository reminderRepository;
     private final ReminderMapper reminderMapper;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final Optional<KafkaTemplate<String, Object>> kafkaTemplate;
     private final AuditService auditService;
 
     @Transactional
@@ -88,7 +89,7 @@ public class ReminderService {
 
         for (Reminder r : due) {
             try {
-                kafkaTemplate.send(KafkaConfig.TOPIC_REMINDERS, r.getUser().getEmail(), r);
+                kafkaTemplate.ifPresent(kt -> kt.send(KafkaConfig.TOPIC_REMINDERS, r.getUser().getEmail(), r));
                 r.setStatus(ReminderStatus.SENT);
                 r.setSentAt(LocalDateTime.now());
 
