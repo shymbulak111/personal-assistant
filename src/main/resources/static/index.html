@@ -889,7 +889,7 @@ async function saveRem(){
   if(!t||!dt){toast('Title and time required','error');return}
   try{
     await api('POST','/api/v1/reminders',{title:t,message:v('mr-m')||null,
-      remindAt:new Date(dt).toISOString(),repeatMinutes:parseInt(v('mr-r')||'0')});
+      remindAt:dt+':00',repeatMinutes:parseInt(v('mr-r')||'0')});
     closeModal();toast('Reminder set!','success');lRems();
   }catch(e){toast(e.message,'error')}
 }

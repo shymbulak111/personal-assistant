@@ -13,3 +13,7 @@ docker-compose.override.yml
 # Claude Code internal files
 .claude/
 TZ_STATUS.md
+
+# Personal files (not part of the repo)
+REPORT.md
+BEGINNERS_GUIDE.md

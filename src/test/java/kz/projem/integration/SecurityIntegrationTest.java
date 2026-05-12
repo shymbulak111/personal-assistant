@@ -40,8 +40,12 @@ class SecurityIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.kafka.bootstrap-servers", () -> "localhost:9999");
-        registry.add("spring.autoconfigure.exclude",
-                () -> "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration");
+        registry.add("spring.autoconfigure.exclude", () ->
+                "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration");
+        registry.add("spring.cache.type", () -> "none");
     }
 
     @Autowired MockMvc mockMvc;

@@ -1,138 +1,179 @@
-# Personal Assistant Backend
+# Персональный Ассистент
 
-A backend system built with Spring Boot 3 that helps users manage tasks, notes, reminders, and chat with an AI assistant.
+Полнофункциональный бэкенд-сервис с веб-интерфейсом для управления задачами, заметками, напоминаниями и интеграцией с ИИ-ассистентом.
 
-## Tech Stack
+## Технологический стек
 
-- **Java 17 + Spring Boot 3.2**
-- **PostgreSQL** — primary database
-- **Redis** — response caching
-- **Apache Kafka** — event streaming (audit logs, reminder notifications)
-- **JWT** — stateless authentication
-- **MapStruct** — DTO mapping
-- **Flyway** — database migrations
-- **Testcontainers** — integration tests
-- **k6** — load testing
+| Слой | Технология |
+|------|-----------|
+| Язык | Java 17 |
+| Фреймворк | Spring Boot 3.2.3 |
+| База данных | PostgreSQL 15 |
+| Кэш | Redis 7 |
+| Очередь сообщений | Apache Kafka |
+| Безопасность | JWT + BCrypt + AES-256-GCM |
+| Маппинг | MapStruct |
+| Миграции БД | Flyway |
+| Тесты | JUnit 5 + Mockito + Testcontainers |
+| Нагрузочное тестирование | k6 |
+| Контейнеры | Docker + Kubernetes |
+| CI/CD | GitHub Actions |
 
-## Architecture
+## Архитектура
+
+Приложение построено по принципам **Clean Architecture** с чётким разделением слоёв:
 
 ```
-Controller  →  Service  →  Repository  →  Domain (JPA Entities)
-                ↓
-           Kafka / Redis
+HTTP Request
+     ↓
+Controller Layer    — REST API, валидация входных данных
+     ↓
+Service Layer       — бизнес-логика, оркестрация
+     ↓
+Repository Layer    — Spring Data JPA, работа с БД
+     ↓
+Domain Layer        — JPA-сущности
+     ↓
+PostgreSQL
 ```
 
-Clean layered architecture:
-- `controller/` — REST endpoints, input validation
-- `service/` — business logic
-- `repository/` — Spring Data JPA
-- `domain/model` — JPA entities
-- `domain/enums` — enumerations
-- `dto/` — request/response objects
-- `mapper/` — MapStruct mappers
-- `security/` — JWT filter, UserDetails
-- `config/` — Spring configuration beans
-- `exception/` — global error handling
+Инфраструктурные компоненты:
+- **Redis** — кэширование и rate limiting AI-запросов
+- **Kafka** — асинхронные audit-события
+- **ИИ** — поддержка любого OpenAI-совместимого API (Groq, Ollama, LM Studio, OpenAI)
 
-## Running locally
+## Быстрый старт
 
-**Prerequisites:** Docker, Docker Compose, JDK 17+
+**Требования:** Docker Desktop, JDK 17+, Maven 3.9+
 
 ```bash
-# start infrastructure
-docker-compose up -d postgres redis kafka
+# Клонировать репозиторий
+git clone https://github.com/shymbulak111/personal-assistant.git
+cd personal-assistant
 
-# run the app
-./mvnw spring-boot:run
+# Запустить инфраструктуру (PostgreSQL, Redis, Kafka)
+docker-compose up -d
+
+# Запустить приложение
+mvn spring-boot:run
 ```
 
-Or run everything with Docker Compose:
-
-```bash
-docker-compose up --build
-```
+Открыть в браузере: **http://localhost:8080**
 
 Swagger UI: http://localhost:8080/swagger-ui.html
 
-## API Endpoints
+## Функционал
 
-### Auth
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/api/v1/auth/register` | Register new user |
-| POST | `/api/v1/auth/login` | Login, get JWT |
+### Управление задачами
+- Создание, редактирование, удаление задач
+- Статусы: `TODO`, `IN_PROGRESS`, `DONE`, `CANCELLED`
+- Приоритеты: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
+- Фильтрация по статусу, приоритету, категории
 
-### Tasks
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/v1/tasks` | List tasks (paginated, filterable) |
-| POST | `/api/v1/tasks` | Create task |
-| GET | `/api/v1/tasks/{id}` | Get task by ID |
-| PUT | `/api/v1/tasks/{id}` | Update task |
-| PATCH | `/api/v1/tasks/{id}/complete` | Mark as done |
-| DELETE | `/api/v1/tasks/{id}` | Delete task |
+### Управление заметками
+- Создание и редактирование заметок
+- Закрепление и архивирование
+- Шифрование содержимого (AES-256-GCM)
 
-### Notes
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/v1/notes` | List notes |
-| POST | `/api/v1/notes` | Create note |
-| GET | `/api/v1/notes/pinned` | Get pinned notes |
-| PATCH | `/api/v1/notes/{id}/pin` | Toggle pin |
-| PATCH | `/api/v1/notes/{id}/archive` | Toggle archive |
+### Напоминания
+- Создание напоминаний с датой/временем
+- Повторяющиеся напоминания
+- Отмена и удаление
 
-### Reminders
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/v1/reminders` | List reminders |
-| POST | `/api/v1/reminders` | Create reminder |
-| PATCH | `/api/v1/reminders/{id}/cancel` | Cancel reminder |
+### ИИ-ассистент
+- Чат с AI через OpenAI-совместимые API
+- Function Calling: создание задач/заметок/напоминаний через натуральный язык
+- Контекст из реальных данных пользователя
+- История чат-сессий
 
-### Chat (AI)
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/api/v1/chat` | Send message to AI assistant |
-| GET | `/api/v1/chat/sessions` | List chat sessions |
-| GET | `/api/v1/chat/sessions/{id}/messages` | Get messages |
+## API
 
-### Statistics
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/v1/stats` | Dashboard stats |
+### Аутентификация
+```
+POST /api/v1/auth/register   — регистрация
+POST /api/v1/auth/login      — вход (возвращает JWT)
+```
 
-## Configuration
+### Задачи
+```
+GET    /api/v1/tasks              — список задач
+POST   /api/v1/tasks              — создать задачу
+GET    /api/v1/tasks/{id}         — получить задачу
+PUT    /api/v1/tasks/{id}         — обновить задачу
+PATCH  /api/v1/tasks/{id}/complete — завершить задачу
+DELETE /api/v1/tasks/{id}         — удалить задачу
+```
 
-Key environment variables:
+### Заметки
+```
+GET    /api/v1/notes              — список заметок
+POST   /api/v1/notes              — создать заметку
+GET    /api/v1/notes/pinned       — закреплённые заметки
+PUT    /api/v1/notes/{id}         — обновить заметку
+PATCH  /api/v1/notes/{id}/pin     — закрепить/открепить
+PATCH  /api/v1/notes/{id}/archive — архивировать
+DELETE /api/v1/notes/{id}         — удалить заметку
+```
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DB_HOST` | localhost | PostgreSQL host |
-| `DB_PASSWORD` | postgres | DB password |
-| `REDIS_HOST` | localhost | Redis host |
-| `KAFKA_BROKERS` | localhost:9092 | Kafka broker |
-| `JWT_SECRET` | (see yml) | JWT signing key |
-| `AI_API_KEY` | (empty) | OpenAI API key (optional) |
-| `AI_MODEL` | gpt-3.5-turbo | LLM model |
+### Напоминания
+```
+GET    /api/v1/reminders          — список напоминаний
+POST   /api/v1/reminders          — создать напоминание
+PATCH  /api/v1/reminders/{id}/cancel — отменить
+DELETE /api/v1/reminders/{id}        — удалить
+```
 
-## Tests
+### ИИ чат
+```
+POST /api/v1/chat                          — отправить сообщение
+GET  /api/v1/chat/sessions                 — список сессий
+GET  /api/v1/chat/sessions/{id}/messages   — история сообщений
+```
+
+### Прочее
+```
+GET    /api/v1/stats              — статистика пользователя
+GET    /api/v1/users/me/export    — экспорт данных (GDPR)
+DELETE /api/v1/users/me           — удаление аккаунта (GDPR)
+GET    /actuator/health           — статус системы
+```
+
+## Безопасность
+
+- **JWT** — access token (24ч) + refresh token (7 дней), алгоритм HS256
+- **BCrypt** — хэширование паролей (cost factor 10)
+- **RBAC** — роли `ROLE_USER`, `ROLE_PREMIUM`, `ROLE_ADMIN`
+- **ABAC** — проверка владельца ресурса через `@PreAuthorize`
+- **AES-256-GCM** — прозрачное шифрование поля `Note.content`
+- **Audit Log** — асинхронная запись всех действий в БД и Kafka
+- **GDPR** — экспорт и каскадное удаление данных пользователя
+
+## Тестирование
 
 ```bash
-# unit tests
+# Unit-тесты (без Docker)
 mvn test -Dgroups="unit"
 
-# integration tests (requires Docker)
+# Интеграционные тесты (требуется Docker для Testcontainers)
 mvn verify -Dgroups="integration"
 
-# all tests
+# Все тесты
 mvn verify
 ```
 
-## Load Testing
+Покрытие:
+- **Unit**: `TaskServiceTest`, `NoteServiceTest`, `UserServiceTest`, `AuthControllerTest`
+- **Integration**: `TaskIntegrationTest`, `SecurityIntegrationTest`, `RedisIntegrationTest`, `KafkaIntegrationTest`
+- **Context**: `PersonalAssistantApplicationTests`
+
+## Нагрузочное тестирование
 
 ```bash
-# requires k6
+# Требуется k6 (https://k6.io)
 k6 run load-tests/tasks.js -e BASE_URL=http://localhost:8080
 ```
+
+Конфигурация: 0 → 10 → 50 → 100 VU, пороги: p95 < 500ms, error rate < 1%.
 
 ## Kubernetes
 
@@ -142,10 +183,18 @@ kubectl apply -f k8s/deployment.yml
 kubectl apply -f k8s/service.yml
 ```
 
-## Security
+2 реплики с liveness/readiness пробами.
 
-- JWT tokens (access 24h, refresh 7 days)
-- BCrypt password hashing
-- RBAC: `ROLE_USER`, `ROLE_PREMIUM`, `ROLE_ADMIN`
-- AI request rate limiting per user
-- Full audit log for all mutating operations
+## Переменные окружения
+
+| Переменная | По умолчанию | Описание |
+|-----------|-------------|---------|
+| `DB_HOST` | localhost | Хост PostgreSQL |
+| `DB_PASSWORD` | postgres | Пароль БД |
+| `REDIS_HOST` | localhost | Хост Redis |
+| `KAFKA_BROKERS` | localhost:9092 | Kafka брокер |
+| `JWT_SECRET` | (встроенный) | Секрет для подписи JWT |
+| `AI_API_KEY` | — | API ключ для LLM провайдера |
+| `AI_BASE_URL` | Groq API | URL LLM провайдера |
+| `AI_MODEL` | openai/gpt-oss-120b | Модель |
+| `ENCRYPTION_KEY` | (встроенный) | Ключ шифрования заметок |
