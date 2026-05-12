@@ -48,6 +48,12 @@ class KafkaIntegrationTest {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+        // Override test-profile exclusions: keep Redis excluded, but allow KafkaAutoConfiguration
+        // so the real KafkaTemplate bean is available for this test
+        registry.add("spring.autoconfigure.exclude", () ->
+                "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
+        registry.add("spring.cache.type", () -> "none");
     }
 
     @Autowired
