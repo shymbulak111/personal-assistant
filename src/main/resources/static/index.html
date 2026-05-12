@@ -1096,6 +1096,7 @@ async function loadHealth(){
       }
     }
     if(svc.key==='redis'&&c?.details?.version) detail='v'+c.details.version;
+    if(svc.key==='kafka'&&st==='UNKNOWN') detail='Kafka настроен, но health indicator недоступен — брокер может быть отключён или excluded из профиля';
     return `<div style="background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:20px;position:relative;overflow:hidden">
       <div style="position:absolute;top:0;right:0;width:80px;height:80px;background:${sc};opacity:.04;border-radius:0 12px 0 80px"></div>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
@@ -1123,14 +1124,55 @@ async function loadHealth(){
 
   const hp=document.getElementById('hpings');
   if(hp){
-    hp.innerHTML=`<div style="background:var(--s1);border:1px solid var(--br);border-radius:12px;overflow:hidden">
+    hp.innerHTML=`<div style="background:var(--s1);border:1px solid var(--br);border-radius:12px;overflow:hidden;margin-bottom:20px">
       <div style="padding:16px 20px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between">
         <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--t1)">API Endpoint Status</div>
         <div style="font-size:11px;color:var(--t3)">Live checks</div>
       </div>
       <div id="eptable"><div style="padding:20px">${lw()}</div></div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--br);border-radius:12px;overflow:hidden">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--t1)">📋 Логи приложения</div>
+        <button onclick="loadLogs()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--acc);padding:0">Обновить</button>
+      </div>
+      <div id="logpanel" style="padding:16px 20px"><div style="font-size:12px;color:var(--t3)">${lw()}</div></div>
     </div>`;
     checkEndpoints(endpoints);
+    loadLogs();
+  }
+}
+
+async function loadLogs(){
+  const el=document.getElementById('logpanel');
+  if(!el) return;
+  try{
+    const r=await fetch('/actuator/logfile',{headers:tok?{Authorization:'Bearer '+tok}:{}});
+    if(!r.ok) throw new Error('logfile endpoint unavailable (status '+r.status+')');
+    const text=await r.text();
+    const lines=text.trim().split('\n');
+    const last=lines.slice(-60).reverse();
+    const colored=last.map(l=>{
+      const lvl=l.match(/\b(ERROR|WARN|INFO|DEBUG|TRACE)\b/)?.[1]||'';
+      const c=lvl==='ERROR'?'#ef4444':lvl==='WARN'?'#f59e0b':lvl==='DEBUG'?'#60a5fa':'var(--t2)';
+      return `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${c};white-space:pre-wrap;word-break:break-all;line-height:1.6;padding:1px 0">${esc(l)}</div>`;
+    }).join('');
+    el.innerHTML=`<div style="max-height:320px;overflow-y:auto">${colored}</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:10px;padding-top:10px;border-top:1px solid var(--br)">Последние 60 строк · ${new Date().toLocaleTimeString('ru-RU')}</div>`;
+  }catch(e){
+    el.innerHTML=`<div style="font-size:12px;color:var(--t3)">
+      <b style="color:#f59e0b">Лог-файл недоступен через Actuator.</b><br><br>
+      Чтобы включить: добавь в <code>application.yml</code>:<br>
+      <code style="font-family:'JetBrains Mono',monospace;display:block;margin:8px 0;padding:8px;background:var(--s2);border-radius:6px">management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,logfile
+logging:
+  file:
+    name: logs/app.log</code>
+      Просмотр через терминал: <code style="font-family:'JetBrains Mono',monospace">docker logs projem-app -f --tail 100</code>
+    </div>`;
   }
 }
 
