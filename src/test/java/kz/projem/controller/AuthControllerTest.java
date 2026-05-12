@@ -8,21 +8,22 @@ import kz.projem.service.UserService;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import kz.projem.security.JwtService;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(AuthController.class)
+@WebMvcTest(value = AuthController.class,
+        excludeAutoConfiguration = {SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class})
 @ActiveProfiles("test")
 @Tag("unit")
 class AuthControllerTest {
@@ -34,7 +35,6 @@ class AuthControllerTest {
     @MockBean JwtService jwtService;
 
     @Test
-    @WithAnonymousUser
     void register_withValidData_returns201() throws Exception {
         RegisterRequest req = new RegisterRequest();
         req.setEmail("newuser@test.com");
@@ -49,7 +49,6 @@ class AuthControllerTest {
         when(userService.register(any())).thenReturn(resp);
 
         mockMvc.perform(post("/api/v1/auth/register")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
@@ -58,21 +57,18 @@ class AuthControllerTest {
     }
 
     @Test
-    @WithAnonymousUser
     void register_withInvalidEmail_returns400() throws Exception {
         RegisterRequest req = new RegisterRequest();
         req.setEmail("not-an-email");
         req.setPassword("Password123");
 
         mockMvc.perform(post("/api/v1/auth/register")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    @WithAnonymousUser
     void login_withValidCredentials_returnsToken() throws Exception {
         LoginRequest req = new LoginRequest();
         req.setEmail("user@test.com");
@@ -86,7 +82,6 @@ class AuthControllerTest {
         when(userService.login(any())).thenReturn(resp);
 
         mockMvc.perform(post("/api/v1/auth/login")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
