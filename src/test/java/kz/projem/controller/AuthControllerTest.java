@@ -14,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import kz.projem.security.JwtService;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,6 +34,7 @@ class AuthControllerTest {
 
     @MockBean UserService userService;
     @MockBean JwtService jwtService;
+    @MockBean UserDetailsService userDetailsService;
 
     @Test
     void register_withValidData_returns201() throws Exception {
