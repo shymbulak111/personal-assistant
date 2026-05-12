@@ -16,4 +16,6 @@ TZ_STATUS.md
 
 # Personal files (not part of the repo)
 REPORT.md
+REPORT_*.docx
 BEGINNERS_GUIDE.md
+generate_report.py
