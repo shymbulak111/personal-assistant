@@ -43,8 +43,7 @@ class SecurityIntegrationTest {
         registry.add("spring.autoconfigure.exclude", () ->
                 "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration," +
                 "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration," +
-                "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration," +
-                "org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration");
+                "org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration");
         registry.add("spring.cache.type", () -> "none");
     }
 
